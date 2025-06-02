@@ -1,0 +1,31 @@
+Implementation steps:-
+
+1.Implemented security filter chain.
+2.Implemented UserDetailService() method.
+3.Configure Database properties.
+4.Implemented Authentication provider() or authProvider() function and Autowired userDetailsService object.
+5.Create MyUserDetailsService class implements UserDetailsService and implement the method in it,
+    and also create a object of UserRepository for taking the data.
+
+6. Create dao package and then create UserRepository interface extends JPARepo<> and write one method
+    findByName(String name) then I will access this method in MyUserDetailsService class to find the user.
+    If the user not found then throw error otherwise return the new UserPrinciple(user).
+
+7. Create UserPrinciple in model package for implementing UserDetails class of spring security which has
+    several default methods like :-
+            i) getPassword();
+            ii) getUserName();
+            iii)isAccountNotExpired();
+            iv)isAccountNonLocked();
+            v)isEnabled()
+
+    Implement the above methods and start the project.
+
+
+
+Let me tell you how can i add register user using controller?
+    Create controller(to fetch api) and service class(to save the data in database using repo).
+
+How to Bcrypt our password in database?
+    -We will autowired BCrypt Password Encoder in UserService class.
+    -Before saving the user data in database, change the password in bcrypt format.
