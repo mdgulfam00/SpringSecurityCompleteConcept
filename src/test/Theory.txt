@@ -2,7 +2,7 @@ Implementation steps:-
 
 1.Implemented security filter chain.
 2.Implemented UserDetailService() method.
-3.Configure Database properties.
+3.Configure Database properties for storing user details in database.
 4.Implemented Authentication provider() or authProvider() function and Autowired userDetailsService object.
 5.Create MyUserDetailsService class implements UserDetailsService and implement the method in it,
     and also create a object of UserRepository for taking the data.
@@ -29,3 +29,34 @@ Let me tell you how can i add register user using controller?
 How to Bcrypt our password in database?
     -We will autowired BCrypt Password Encoder in UserService class.
     -Before saving the user data in database, change the password in bcrypt format.
+
+Story Behind the JWT  token?
+    -First time user will login using id and password, then in response server will logged in successfully.
+     And Server will provide a JWT token to the client and says please keep this token safetly.
+     Whenever user makes a request for resources, user will send the TOKEN along with the request
+        and server verifies the token and give access to user if matches.
+     -JWT ki wajah se hme baar baar login krne ki jaroorat nhi padti hai.
+
+Steps to implement JWT Token :-
+       i) Remove the necessity of authentication of api's like "/register, /login".
+       ii) In security config we will create a Bean of AuthenticationManager
+       iii ) In userController we will get hold of the above bean created in config.
+       iv) In login controller we will get hold of Authentication object for authenticate() the details.
+                    if successfull -> call generateToken(String userName)
+                    if unsuccessfull -> return error
+        v) Create a JWTService class in service package and autowire it in controller class and then
+                we will able to access the methods of JWTService class in controller class.
+        vi) Add 3 jsonWebToken dependency in pom.xml .
+        vii) Complete generateToken() method-
+                -create claims named Map<String,Object>
+                and do the stuffs.
+        viii) Create getKey() in JWTService and create a SECRET_KEY variable in JWTService and then we get JWT token.
+                But till this, we will get token but we will not get any resource with token beacuse we have not verified it.
+
+Lets Verify :-
+
+        ix) First we have to add the .addFilterBefore() in securityFilterChain() and create a class JwtFilter in config package and  jwtFilter object in SecurityConfig Class.
+        x) We will implement doFilterInternal() and create a object of JWTService to access extractUserName(), validateToken().
+        xi) We will implement validateToken(), extractUserName() method in JWTService.
+
+        Then run the application and you will get to access the resources of the application with JWT tokens.
