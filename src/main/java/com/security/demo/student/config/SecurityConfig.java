@@ -3,9 +3,11 @@ package com.security.demo.student.config;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -16,6 +18,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.NoOpPasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
@@ -25,6 +28,10 @@ public class SecurityConfig {
     //this will tells spring from where we get details of user
     @Autowired
     private UserDetailsService userDetailsService;
+
+    @Autowired
+    private JwtFilter jwtFilter;
+    //while implementing jwt token
 
     //Ye code Spring Security ko batata hai ki user data kaise milega aur password kaise verify hoga.
     @Bean
@@ -43,15 +50,16 @@ public class SecurityConfig {
     //There is some default configuration of spring security.
     //If we want to change the default configuration of security we should return the object
     // of SecurityFilterChange().
-
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
         //1. Creating first change in security i.e. disabling the csrf token.
         http.csrf(customizer->customizer.disable());
 
-        //2.Koi bhi request(any API call) aye uske liye user ko ab authenticate hona zaroori hai
-        http.authorizeHttpRequests(request->request.anyRequest().authenticated());
+        //2.Koi bhi request(any API call) aye uske liye user ko ab authenticate hona zaroori hai except "/register", "/login" api.
+        http.authorizeHttpRequests(request->request
+                                        .requestMatchers("/register","/login").permitAll()
+                                        .anyRequest().authenticated());
 
         //3. If we are using custom security then we need to implement this to enable form based login
         // If we are having 5th step code then we don't need form based login and we can remove it
@@ -63,6 +71,8 @@ public class SecurityConfig {
 
         //5. It tells do not store any session on the server i.e. every request should carry its own authentication
         http.sessionManagement(session->session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+
+        http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class); //while implementing jwt
 
 
         return http.build();
@@ -88,5 +98,12 @@ public class SecurityConfig {
                 .build();
 
         return new InMemoryUserDetailsManager(user1, user2);
+    }
+
+
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
+
+        return config.getAuthenticationManager();
     }
 }
